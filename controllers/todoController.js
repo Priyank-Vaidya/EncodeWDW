@@ -4,7 +4,7 @@ const todo = require("../models/todo");
 const { $where } = require("../models/users");
 
 
-async function addTask(req, res) {
+exports.addTask = async(req, res) => {
     let { user, title } = req.body;
     if (!user) return res.status(400).json({ message: "User ID is required" });
 
@@ -27,7 +27,7 @@ async function addTask(req, res) {
     }
 }
 
-async function getTasks(req, res) {
+exports.getTasks = async(req, res) => {
     const { user } = req.body;
     try {
 
@@ -80,5 +80,3 @@ exports.getAll = async(req, res) => {
     }
 }
 
-
-module.exports = {getTasks,addTask}

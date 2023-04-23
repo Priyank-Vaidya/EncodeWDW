@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
 
-const requireAuth = (req, res, next) => {
+exports.requireAuth = (req, res, next) => {
   const token = req.cookies.jwt;
 
   // check json web token exists & is verified
@@ -19,5 +19,3 @@ const requireAuth = (req, res, next) => {
     res.redirect('/login');
   }
 };
-
-module.exports = { requireAuth };
