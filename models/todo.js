@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const todoSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        unique: true
+    },
     title: {
         type: String,
     },
@@ -13,11 +17,7 @@ const todoSchema = new mongoose.Schema({
         default: Date.now
     },
 
-    //Refereced from the User Schema
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "user"
-    }
+    //Refereced from the User Sche
 });
 
 module.exports = mongoose.model("todo", todoSchema);

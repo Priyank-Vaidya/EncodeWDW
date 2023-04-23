@@ -2,6 +2,7 @@ const userSchema = require('../models/users');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 
 const handleErrors = (err) => {
     console.log(err.message, err.code);
@@ -36,44 +37,70 @@ const handleErrors = (err) => {
     return errors;
   }
 
-const signUpuser = async(req, res)=>{
+  exports.registerUser=async (req, res)=> {
     const { username, password } = req.body;
-
+   
 
     try{
-
-        //Firstly Storing the credentials in database
-        const user = await userSchema.findOne({username})
-
+        const user = await userSchema.findOne({username});
         if(user){
-            const salt = await bcrypt.genSalt(10);
-            let hashedPassword = await bcrypt.hash(password, salt);
+          return res.status(400).json({message: "User already exists"});
+        }
+        //Gerating the Hasing Password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        const newUser = new User({ username,password: hashedPassword });
 
-            //Storing the New User
-            const newUser = await userSchema.create({username, password})
+        const token = jwt.sign(newUser._id, process.env.JWT_SECRET_KEY);
+      res.cookie('jwt', token, { httpOnly: true, maxAge: process.env.SESSION_TIMEOUT * 1000 });
 
-            //Saving the new User
-            const savedUser = await newUser.save();
+      res.status(200).json({ user: newUser._id });
+      console.log("User Successfully Logged in");
 
-
-        //Now Generating the token
-        const token = jwt.sign(user._id, process.env.JWT_SECRET_KEY)
-        res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 })
-
-        res.status(201).json({ user:user._id });
-
+        res.json(newUser);
+    } catch(err){
+        res.send({err: err.message})
     }
 }
-    catch(err){
-        const error = handleErrors(err)
-        res.status(400).send(error);
-    }
+
+// const signUpuser = async(req, res)=>{
+//     const { username, password } = req.body;
+
+
+//     try{
+
+//         //Firstly Storing the credentials in database
+//         // const user = await userSchema.findOne({username})
+
+//         // if(user){
+//             const salt = await bcrypt.genSalt(10);
+//             let hashedPassword = await bcrypt.hash(password, salt);
+
+//             //Storing the New User
+//             const newUser = await userSchema.create({username, hashedPassword})
+
+//             //Saving the new User
+//             const savedUser = await newUser.save();
+
+
+//         //Now Generating the token
+//         const token = jwt.sign(user._id, process.env.JWT_SECRET_KEY)
+//         res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 })
+
+//         res.status(201).json({ user:user._id });
+
+//     // }
+// }
+//     catch(err){
+//         const error = handleErrors(err)
+//         res.status(400).send(error);
+//     }
     
 
-}
+// }
 
 
-const loginUser = async (req, res) => {
+exports.loginUser = async (req, res) => {
     const { username, password } = req.body;
   
     try {
@@ -99,6 +126,4 @@ const loginUser = async (req, res) => {
       const errors = handleErrors(err);
       res.status(400).json({ errors });
     }
-}
-
-module.exports = {signUpuser, loginUser};
+  }

@@ -1,25 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const todo = require("../models/todo");
+const user = require('../models/users');
 const { $where } = require("../models/users");
 
 
 exports.addTask = async(req, res) => {
-    let { user, title } = req.body;
+    let { username ,title } = req.body;
     if (!user) return res.status(400).json({ message: "User ID is required" });
 
     // check if user exists in db
     try {
-        const userExists = await User.find({ _id: user })
-        if (!userExists) return res.status(400).json({ message: "User does not exist" });
+        //Adding the new Todo todo where Username matches 
+      const add = await todo.create($where (todo.find(username)))
 
-        // let {title, isCompleted} = req.body;
-        if (!title) return res.status(400).json({ message: "Title is required" });
-        
-        //adding to the todo-list
-        const add = await todo.insertMany($where (todo.find({user: userExists._id})))
-
-        const savedTodo = await add.save();
+      const savedTodo = await add.save();
         res.json(savedTodo);
     } catch (err) {
         res.json({ message: err });
@@ -28,21 +23,14 @@ exports.addTask = async(req, res) => {
 }
 
 exports.getTasks = async(req, res) => {
-    const { user } = req.body;
+    const { user } = req.params;
     try {
-
-        const userExists = await User.find(user);
-        if (!userExists) return res.status(400).json({ message: "User does not exist" })
-
-        const todos = await todoSchema.find({
-            user: user
+        const todos = await todo.find({
+            _id: user
         })
-
-
+        //Promises
         .then(console.log('Todo fetched'))
         .catch(err)(console.log(err))
-
-
         res.json(todos);
     } catch (err) {
         res.json({ message: err });
@@ -60,7 +48,7 @@ exports.getAll = async(req, res) => {
 
 
         //Find if the required user is present or not
-      const todos = await todo.findOne({ user: req.user.id })
+      const todos = await todo.find()
       .then(console.log('Todo fetched'))
       .catch(err)(console.log(err))
 
@@ -80,3 +68,21 @@ exports.getAll = async(req, res) => {
     }
 }
 
+exports.updateTodo= async (req, res) => {
+  const { id } = req.params;
+  const { title, isCompleted } = req.body;
+
+  try {
+    const updatedTodo = await Todo.findByIdAndUpdate(
+      id,
+      { title, isCompleted },
+      { new: true }
+    );
+    if (!updatedTodo) {
+      return res.status(404).json({ message: "Todo not found" });
+    }
+    res.json(updatedTodo);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
