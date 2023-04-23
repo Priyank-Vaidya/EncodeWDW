@@ -1,6 +1,6 @@
 const userSchema = require('../models/users');
 const jwt = require('jsonwebtoken');
-require('dotenv').require();
+require('dotenv').config();
 const bcrypt = require('bcryptjs');
 
 const handleErrors = (err) => {
@@ -77,7 +77,9 @@ const loginUser = async (req, res) => {
     const { username, password } = req.body;
   
     try {
-    const user = await User.findOne({username});
+    const user = await User.findOne({username})
+    .then(console.log('user fetched'))
+    .catch(console.log('user not fetched'))
 
     if(user){
         const validPassword = await bcrypt.compare(password, user.password);

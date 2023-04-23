@@ -32,11 +32,17 @@ async function getTasks(req, res) {
     try {
 
         const userExists = await User.find(user);
-        if (!userExists) return res.status(400).json({ message: "User does not exist" });
+        if (!userExists) return res.status(400).json({ message: "User does not exist" })
 
         const todos = await todoSchema.find({
             user: user
-        });
+        })
+
+
+        .then(console.log('Todo fetched'))
+        .catch(err)(console.log(err))
+
+
         res.json(todos);
     } catch (err) {
         res.json({ message: err });
@@ -44,7 +50,7 @@ async function getTasks(req, res) {
 }
 
 
-async function getAll(req, res){
+exports.getAll = async(req, res) => {
     try {
 
         //Applying the concept of pagination
@@ -55,6 +61,9 @@ async function getAll(req, res){
 
         //Find if the required user is present or not
       const todos = await todo.findOne({ user: req.user.id })
+      .then(console.log('Todo fetched'))
+      .catch(err)(console.log(err))
+
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
@@ -72,4 +81,4 @@ async function getAll(req, res){
 }
 
 
-module.exports = {addTask, getTasks, getAll}
+module.exports = {getTasks,addTask}
